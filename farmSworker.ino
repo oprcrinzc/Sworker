@@ -1,10 +1,3 @@
-/**
- * BasicHTTPClient.ino
- *
- *  Created on: 24.05.2015
- *
- */
-
 #include <Arduino.h>
 
 #include <WiFi.h>
@@ -73,49 +66,61 @@ float h;
 float t;
 float f;
 
-void see_gatekeeper(){
-  if ((wifiMulti.run() == WL_CONNECTED)) {
+void see_gatekeeper()
+{
+  if ((wifiMulti.run() == WL_CONNECTED))
+  {
 
     HTTPClient http;
 
     USE_SERIAL.print("[HTTP] begin...\n");
-    if (is_registered==0){
-      http.begin(dataserver+"/gatekeeper/"+worker_name);
+    if (is_registered == 0)
+    {
+      http.begin(dataserver + "/gatekeeper/" + worker_name);
 
       USE_SERIAL.print("[HTTP] GET...\n");
       // start connection and send HTTP header
       int httpCode = http.GET();
 
       // httpCode will be negative on error
-      if (httpCode > 0) {
-      // HTTP header has been send and Server response header has been handled
-      USE_SERIAL.printf("[HTTP] GET... code: %d\n", httpCode);
+      if (httpCode > 0)
+      {
+        // HTTP header has been send and Server response header has been handled
+        USE_SERIAL.printf("[HTTP] GET... code: %d\n", httpCode);
 
-      // file found at server
-      if (httpCode == HTTP_CODE_OK) {
-        String payload = http.getString();
-        if (payload=="go to register") state = 1;
-        else {
-          worker_id = payload;
-          state=2;
+        // file found at server
+        if (httpCode == HTTP_CODE_OK)
+        {
+          String payload = http.getString();
+          if (payload == "go to register")
+            state = 1;
+          else
+          {
+            worker_id = payload;
+            state = 2;
+          }
+          USE_SERIAL.println(payload);
         }
-        USE_SERIAL.println(payload);
-      }else {
-        USE_SERIAL.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+        else
+        {
+          USE_SERIAL.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+        }
       }
     }
-  } 
-  http.end();
+    http.end();
   }
 }
-void goto_register(){
-  if ((wifiMulti.run() == WL_CONNECTED)) {
+void goto_register()
+{
+  if ((wifiMulti.run() == WL_CONNECTED))
+  {
 
     HTTPClient http;
 
     USE_SERIAL.print("[HTTP] begin...\n");
-    if (is_registered==0){
-      http.begin(dataserver+"/register/workers/"+worker_name);
+    if (is_registered == 0)
+    {
+      http.begin(dataserver + "/register/workers/" + worker_name);
       http.addHeader("Content-Type", "application/x-www-form-urlencoded");
 
       USE_SERIAL.print("[HTTP] POST...\n");
@@ -123,35 +128,42 @@ void goto_register(){
       int httpCode = http.POST("");
 
       // httpCode will be negative on error
-      if (httpCode > 0) {
-      // HTTP header has been send and Server response header has been handled
-      USE_SERIAL.printf("[HTTP] POST... code: %d\n", httpCode);
+      if (httpCode > 0)
+      {
+        // HTTP header has been send and Server response header has been handled
+        USE_SERIAL.printf("[HTTP] POST... code: %d\n", httpCode);
 
-      // file found at server
-      if (httpCode == 201) {
-        String payload = http.getString();
-        // if (payload=="go to register") state = 1;
-        state = 0;
-        USE_SERIAL.println(payload);
-      }else {
-        USE_SERIAL.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
+        // file found at server
+        if (httpCode == 201)
+        {
+          String payload = http.getString();
+          // if (payload=="go to register") state = 1;
+          state = 0;
+          USE_SERIAL.println(payload);
+        }
+        else
+        {
+          USE_SERIAL.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
+        }
       }
     }
-  } 
-  http.end();
+    http.end();
   }
 }
-void update_data(){
-  if ((wifiMulti.run() == WL_CONNECTED)) {
+void update_data()
+{
+  if ((wifiMulti.run() == WL_CONNECTED))
+  {
 
     HTTPClient http;
 
     USE_SERIAL.print("[HTTP] begin...\n");
-    if (is_registered==0){
-      String url_ =dataserver+"/update/workers/"+worker_name;
+    if (is_registered == 0)
+    {
+      String url_ = dataserver + "/update/workers/" + worker_name;
       http.begin(url_);
       String boundary = "----Eeeboundary";
-      http.addHeader("Content-Type", "multipart/form-data; boundary="+boundary);
+      http.addHeader("Content-Type", "multipart/form-data; boundary=" + boundary);
 
       USE_SERIAL.print("[HTTP] POST...\n");
       // start connection and send HTTP header
@@ -162,43 +174,47 @@ void update_data(){
       // USE_SERIAL.println(t);
       // String bod = "id="+worker_id+"&humidity="+String(h, 2)+"&temperature="+String(t, 2);
       String body = "";
-      body += "--"+boundary + "\r\n";
+      body += "--" + boundary + "\r\n";
       body += "Content-Disposition: form-data; name=\"id\"\r\n\r\n";
-      body += worker_id.substring(1, 25)+"\r\n";
+      body += worker_id.substring(1, 25) + "\r\n";
 
-      body += "--"+boundary + "\r\n";
+      body += "--" + boundary + "\r\n";
       body += "Content-Disposition: form-data; name=\"humidity\"\r\n\r\n";
-      body += String(h, 2)+"\r\n";
+      body += String(h, 2) + "\r\n";
 
-      body += "--"+boundary + "\r\n";
+      body += "--" + boundary + "\r\n";
       body += "Content-Disposition: form-data; name=\"temperature\"\r\n\r\n";
-      body += String(t, 2)+"\r\n";
+      body += String(t, 2) + "\r\n";
 
-      body += "--"+boundary + "\r\n";
+      body += "--" + boundary + "\r\n";
       body += "Content-Disposition: form-data; name=\"water_level\"\r\n\r\n";
-      body += String(waterLevel, 1)+"\r\n";
-      body += "--"+boundary + "\r\n";
-      int httpCode = http.POST(body);
+      body += String(waterLevel, 1) + "\r\n";
+      body += "--" + boundary + "\r\n";
+      int httpCode = http.PUT(body);
 
       // httpCode will be negative on error
-      if (httpCode > 0) {
-      // HTTP header has been send and Server response header has been handled
-      USE_SERIAL.printf("[HTTP] POST... code: %d\n", httpCode);
+      if (httpCode > 0)
+      {
+        // HTTP header has been send and Server response header has been handled
+        USE_SERIAL.printf("[HTTP] POST... code: %d\n", httpCode);
 
-      // file found at server
-      if (httpCode == 201) {
-        String payload = http.getString();
-        // if (payload=="go to register") state = 1;
-        // state = 2;
-        USE_SERIAL.println("updated");
-      }else {
-        USE_SERIAL.println(url_);
-        USE_SERIAL.println(body);
-        USE_SERIAL.printf("[HTTP] POST failed, error: %s\n",http.errorToString(httpCode).c_str());
+        // file found at server
+        if (httpCode == 201)
+        {
+          String payload = http.getString();
+          // if (payload=="go to register") state = 1;
+          // state = 2;
+          USE_SERIAL.println("updated");
+        }
+        else
+        {
+          USE_SERIAL.println(url_);
+          USE_SERIAL.println(body);
+          USE_SERIAL.printf("[HTTP] POST failed, error: %s\n", http.errorToString(httpCode).c_str());
+        }
       }
     }
-  } 
-  http.end();
+    http.end();
   }
 }
 
@@ -208,25 +224,32 @@ std::vector<int> btn_current_state(btn.size());
 
 int playMode = 0;
 int lastPlayMode = 0;
-int munit = 0; 
+int munit = 0;
 
-void updateBtnState(int mode=0){
-  if(mode==0){
-    for(int i=0;i< btn.size();i++){
+void updateBtnState(int mode = 0)
+{
+  if (mode == 0)
+  {
+    for (int i = 0; i < btn.size(); i++)
+    {
       btn_current_state[i] = digitalRead(btn[i]);
     }
-  } else if(mode == 1){
+  }
+  else if (mode == 1)
+  {
     btn_last_state = btn_current_state;
   }
 }
 
-void toggleCMMM(){
+void toggleCMMM()
+{
   munit += 1;
-  if(munit>2) munit = 0;
+  if (munit > 2)
+    munit = 0;
 }
 
-
-void setup() {
+void setup()
+{
 
   USE_SERIAL.begin(115200);
 
@@ -234,7 +257,8 @@ void setup() {
   USE_SERIAL.println();
   USE_SERIAL.println();
 
-  for (uint8_t t = 4; t > 0; t--) {
+  for (uint8_t t = 4; t > 0; t--)
+  {
     USE_SERIAL.printf("[SETUP] WAIT %d...\n", t);
     USE_SERIAL.flush();
     delay(1000);
@@ -242,7 +266,6 @@ void setup() {
 
   // wifiMulti.addAP("natasa_2.4G", "S141036p");
   wifiMulti.addAP("🌸", "wpaoknao");
-
 
   worker_name = "esp32_0";
 
@@ -253,56 +276,71 @@ void setup() {
 
   display.begin(SSD1306_SWITCHCAPVCC, 0x3c);
 
-  for(int pin : btn) pinMode(pin, INPUT_PULLUP);
+  for (int pin : btn)
+    pinMode(pin, INPUT_PULLUP);
   updateBtnState(0);
   updateBtnState(1);
-  
-
 }
 
 unsigned long previousMillis = 0; // Store last time
-const long interval = 5000;      // Interval in milliseconds
+const long interval = 5000;       // Interval in milliseconds
 
-
-
-void loop() {
+void loop()
+{
   h = dht.readHumidity();
   t = dht.readTemperature();
   f = dht.readTemperature(true);
-  waterLevel = analogRead(35)/4095.0*100;
+  waterLevel = analogRead(35) / 4095.0 * 100;
 
   unsigned long currentMillis = millis();
-  
-  if (state==0) see_gatekeeper();
-  if (state==1) goto_register();
+
+  if (state == 0)
+    see_gatekeeper();
+  if (state == 1)
+    goto_register();
   // if () update_data();
 
-  if (state==2 && currentMillis - previousMillis >= interval){
+  if (state == 2 && currentMillis - previousMillis >= interval)
+  {
     previousMillis = currentMillis;
     update_data();
   }
 
   updateBtnState(0);
   int btn_num = 0;
-  for(int state : btn_current_state){
-    if(btn_num==0 && state==1 && btn_last_state.at(btn_num) == 0) {
+  for (int state : btn_current_state)
+  {
+    if (btn_num == 0 && state == 1 && btn_last_state.at(btn_num) == 0)
+    {
       toggleCMMM();
       Serial.println(state);
-      }
-    btn_num+=1;
+    }
+    btn_num += 1;
   }
-  
+
   float show;
   std::string units;
-  if(munit==0){units="C";show=t;}
-  else if(munit==1){units="F";show=f;}
-  else if(munit==2){units="%";show=h;}
+  if (munit == 0)
+  {
+    units = "C";
+    show = t;
+  }
+  else if (munit == 1)
+  {
+    units = "F";
+    show = f;
+  }
+  else if (munit == 2)
+  {
+    units = "%";
+    show = h;
+  }
   display.clearDisplay();
   display.setTextSize(3);
   display.setTextColor(WHITE);
   display.setCursor(0, 0);
   display.print(show);
-  display.setCursor(100,15);
+  display.setCursor(100, 15);
   display.setTextSize(2);
   display.print(units.c_str());
   display.display();
