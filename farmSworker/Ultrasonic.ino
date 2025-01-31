@@ -15,9 +15,9 @@ float GetDistance(){
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
 
-  soundSpeed = 331.3 + 0.606*t;
-  soundSpeed = soundSpeed * 100 / 1000000;
   long duration = pulseIn(echoPin, HIGH);
+  soundSpeed = 331.3 + 0.606*t;
+  soundSpeed = soundSpeed / 10000;
   float distance = duration * soundSpeed / 2;
   return distance;
 }

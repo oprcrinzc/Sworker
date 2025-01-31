@@ -142,7 +142,7 @@ void update_data()
           // if (payload=="go to register") state = 1;
           // state = 2;
           USE_SERIAL.println("updated");
-          USE_SERIAL.println(payload);
+          // USE_SERIAL.println(payload);
           StaticJsonDocument<200> doc;
           DeserializationError error = deserializeJson(doc, payload);
     

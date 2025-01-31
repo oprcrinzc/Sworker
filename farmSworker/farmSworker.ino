@@ -1,3 +1,5 @@
+#include <HCSR04.h>
+
 #include <ArduinoJson.h>
 #include <ArduinoJson.hpp>
 
@@ -31,7 +33,9 @@ int is_registered = 0;
 
 String dataserver = "http://192.168.118.185:8888";
 // int is_
-const float maxWaterCM = 22.5 - 2;
+const float maxWaterCM = 8;
+const float distanceFromMaxWaterCM =  7;
+// const float maxWaterCM = 22.5 - 2;
 float Disperm;
 float waterLevel;
 bool waterOverFlow = false;
@@ -88,7 +92,6 @@ void setup()
     delay(1000);
   }
 
-  // wifiMulti.addAP("natasa_2.4G", "S141036p");
   wifiMulti.addAP("🌸", "wpaoknao");
 
   worker_name = "esp32_0";
@@ -119,17 +122,19 @@ void loop()
   f = dht.readTemperature(true);
 
   delay(500);
+  delay(500);
+  float d = GetDistance();
+  USE_SERIAL.printf("CM:%f\n", d);
 
-  waterLevel = maxWaterCM - GetDistance() + 5;
+  waterLevel = maxWaterCM + distanceFromMaxWaterCM - d;
   Disperm = waterLevel/maxWaterCM *100;
   if(Disperm > 100) Disperm = 100;
   if(Disperm < 0) Disperm = 0;
 
   WaterPump();
-  // float d = GetDistance();
-  USE_SERIAL.println(String(Disperm, 2));
-  USE_SERIAL.println(String(waterLevelTarget, 2));
-  USE_SERIAL.println(String(waterLevelToFill, 2));
+  // USE_SERIAL.print("CM: ");
+  // USE_SERIAL.println(String(waterLevelTarget, 2));
+  // USE_SERIAL.println(String(waterLevelToFill, 2));
 
   unsigned long currentMillis = millis();
 
