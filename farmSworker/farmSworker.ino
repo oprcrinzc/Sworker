@@ -31,7 +31,7 @@ int is_registered = 0;
 
 String dataserver = "http://192.168.118.185:8888";
 // int is_
-const float maxWaterCM = 15;
+const float maxWaterCM = 22.5 - 2;
 float Disperm;
 float waterLevel;
 bool waterOverFlow = false;
